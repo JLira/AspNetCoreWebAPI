@@ -37,7 +37,7 @@ namespace SmartSchool.WebAPI.Data
 
             if (includeProfessor)
             {
-                query = query.Include(a => a.AlunosDiciplinas)
+                query = query.Include(a => a.AlunosDisciplinas)
                               .ThenInclude(ad => ad.Disciplina)
                               .ThenInclude(d => d.Professor);
             }
@@ -53,35 +53,35 @@ namespace SmartSchool.WebAPI.Data
 
             if (includeProfessor)
             {
-                query = query.Include(a => a.AlunosDiciplinas)
+                query = query.Include(a => a.AlunosDisciplinas)
                               .ThenInclude(ad => ad.Disciplina)
                               .ThenInclude(d => d.Professor);
             }
 
             query = query.AsNoTracking()
                          .OrderBy(a => a.Id)
-                         .Where(aluno => aluno.AlunosDiciplinas.Any(ad => ad.DisciplinaId == disciplinaId));
+                         .Where(aluno => aluno.AlunosDisciplinas.Any(ad => ad.DisciplinaId == disciplinaId));
 
             return query.ToArray();
         }
 
-        // public Aluno GetAllAlunoByID(int alunoId, bool includeProfessor = false)
-        // {
-        //     IQueryable<Aluno> query = _context.Alunos;
+        public Aluno GetAlunoById(int alunoId, bool includeProfessor = false)
+        {
+            IQueryable<Aluno> query = _context.Alunos;
 
-        //     if (includeProfessor)
-        //     {
-        //         query = query.Include(a => a.AlunosDiciplinas)
-        //                       .ThenInclude(ad => ad.Disciplina)
-        //                       .ThenInclude(d => d.Professor);
-        //     }
+            if (includeProfessor)
+            {
+                query = query.Include(a => a.AlunosDisciplinas)
+                              .ThenInclude(ad => ad.Disciplina)
+                              .ThenInclude(d => d.Professor);
+            }
 
-        //     query = query.AsNoTracking()
-        //                  .OrderBy(a => a.Id)
-        //                  .Where(aluno => aluno.Id == alunoId);
+            query = query.AsNoTracking()
+                         .OrderBy(a => a.Id)
+                         .Where(aluno => aluno.Id == alunoId);
 
-        //     return query.FirstOrDefault();
-        // }
+            return query.FirstOrDefault();
+        }
 
         public Professor[] GetAllProfessores(bool includeAlunos = false)
         {
@@ -90,7 +90,7 @@ namespace SmartSchool.WebAPI.Data
             if (includeAlunos)
             {
                 query = query.Include(p => p.Disciplinas)
-                              .ThenInclude(d => d.AlunosDiciplinas)
+                              .ThenInclude(d => d.AlunosDisciplinas)
                               .ThenInclude(ad => ad.Aluno);
             }
 
@@ -106,27 +106,27 @@ namespace SmartSchool.WebAPI.Data
             if (includeAlunos)
             {
                 query = query.Include(p => p.Disciplinas)
-                              .ThenInclude(d => d.AlunosDiciplinas)
+                              .ThenInclude(d => d.AlunosDisciplinas)
                               .ThenInclude(ad => ad.Aluno);
             }
 
             query = query.AsNoTracking()
                          .OrderBy(p => p.Id)
                          .Where(aluno => aluno.Disciplinas.Any(
-                           d => d.AlunosDiciplinas.Any(ad => ad.DisciplinaId == disciplinaId)
+                           d => d.AlunosDisciplinas.Any(ad => ad.DisciplinaId == disciplinaId)
                          ));
 
             return query.ToArray();
         }
 
-        public Professor GetAllProfessorById(int professorId, bool includeProfessor = false)
+        public Professor GetProfessorById(int professorId, bool includeProfessor = false)
         {
             IQueryable<Professor> query = _context.Professores;
 
             if (includeProfessor)
             {
                 query = query.Include(p => p.Disciplinas)
-                              .ThenInclude(d => d.AlunosDiciplinas)
+                              .ThenInclude(d => d.AlunosDisciplinas)
                               .ThenInclude(ad => ad.Aluno);
             }
 
@@ -135,11 +135,6 @@ namespace SmartSchool.WebAPI.Data
                          .Where(professor => professor.Id == professorId);
 
             return query.FirstOrDefault();
-        }
-
-        public Aluno GetAllAlunoById(int alunoId, bool includeProfessor = false)
-        {
-            throw new System.NotImplementedException();
         }
     }
 }
