@@ -1,16 +1,16 @@
 using System;
+using System.IO;
 using System.Reflection;
 using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using SmartSchool.WebAPI.Data;
-using System.IO;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ApiExplorer;
 
 namespace SmartSchool.WebAPI
 {
@@ -27,35 +27,34 @@ namespace SmartSchool.WebAPI
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<SmartContext>(
-              context => context.UseSqlite(Configuration.GetConnectionString("Default"))
+                context => context.UseSqlite(Configuration.GetConnectionString("Default"))
             );
 
             services.AddControllers()
                     .AddNewtonsoftJson(
-                        opt => opt.SerializerSettings.ReferenceLoopHandling =
-                        Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+                        opt => opt.SerializerSettings.ReferenceLoopHandling = 
+                            Newtonsoft.Json.ReferenceLoopHandling.Ignore);
 
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
             services.AddScoped<IRepository, Repository>();
 
-            services.AddVersionedApiExplorer(options =>
-                       {
-                           options.GroupNameFormat = "'v'VVV";
-                           options.SubstituteApiVersionInUrl = true;
-                       })
-                       .AddApiVersioning(options =>
-                       {
-                           options.DefaultApiVersion = new ApiVersion(1, 0);
-                           options.AssumeDefaultVersionWhenUnspecified = true;
-                           options.ReportApiVersions = true;
-                       });
+            services.AddVersionedApiExplorer(options => 
+            {
+                options.GroupNameFormat = "'v'VVV";
+                options.SubstituteApiVersionInUrl = true;
+            })
+            .AddApiVersioning(options => 
+            {
+                options.DefaultApiVersion = new ApiVersion(1, 0);
+                options.AssumeDefaultVersionWhenUnspecified = true;
+                options.ReportApiVersions = true;
+            });
 
             var apiProviderDescription = services.BuildServiceProvider()
                                                  .GetService<IApiVersionDescriptionProvider>();
 
-            services.AddSwaggerGen(options =>
-            {
+            services.AddSwaggerGen(options => {
                 foreach (var description in apiProviderDescription.ApiVersionDescriptions)
                 {
                     options.SwaggerDoc(
@@ -73,23 +72,24 @@ namespace SmartSchool.WebAPI
                             },
                             Contact = new Microsoft.OpenApi.Models.OpenApiContact
                             {
-                                Name = "Jobson Lira",
+                                Name = "Vinícius de Andrade",
                                 Email = "",
-                                Url = new Uri("http://meusite.com")
+                                Url = new Uri("http://programadamente.com")
                             }
-                        }
+                        }    
                     );
                 }
+
                 var xmlCommentsFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlCommentsFullPath = Path.Combine(AppContext.BaseDirectory, xmlCommentsFile);
 
-                // options.IncludeXmlComments(xmlCommentsFullPath);
+                options.IncludeXmlComments(xmlCommentsFullPath);
             });
-
+            services.AddCors();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app,
+        public void Configure(IApplicationBuilder app, 
                               IWebHostEnvironment env,
                               IApiVersionDescriptionProvider apiProviderDescription)
         {
@@ -101,16 +101,16 @@ namespace SmartSchool.WebAPI
             // app.UseHttpsRedirection();
 
             app.UseRouting();
+            app.UseCors(x => x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 
             app.UseSwagger()
                .UseSwaggerUI(options =>
                {
                    foreach (var description in apiProviderDescription.ApiVersionDescriptions)
-                   {
-                       options.SwaggerEndpoint(
-                                 $"/swagger/{description.GroupName}/swagger.json",
-                                 description.GroupName.ToUpperInvariant()
-                       );
+                   {                       
+                        options.SwaggerEndpoint(
+                            $"/swagger/{description.GroupName}/swagger.json", 
+                            description.GroupName.ToUpperInvariant());
                    }
                    options.RoutePrefix = "";
                });
